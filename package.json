@@ -1,0 +1,14 @@
+{
+  "name": "toon-squad",
+  "private": true,
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "dev": "./dev",
+    "dev:web": "bun run --filter @toon-squad/web dev",
+    "dev:bridge": "bun run --filter @toon-squad/bridge dev"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Toon Squad",
+  "version": "0.2.0",
+  "description": "Chrome browser control for the Toon Squad AI agent",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting",
+    "alarms",
+    "offscreen",
+    "cookies"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Toon Squad"
+  },
+  "icons": {}
+}

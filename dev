@@ -1,0 +1,21 @@
+#!/bin/bash
+set -e
+
+cd "$(dirname "$0")"
+
+echo ""
+echo "  🏀 Starting Toon Squad..."
+echo ""
+
+# Start the extension bridge (WebSocket server for Chrome extension)
+bun --hot apps/bridge/src/index.ts &
+BRIDGE_PID=$!
+
+# Start the Next.js dev server
+(cd apps/web && bun run dev) &
+WEB_PID=$!
+
+# Cleanup on exit
+trap "kill $BRIDGE_PID $WEB_PID 2>/dev/null" EXIT
+
+wait

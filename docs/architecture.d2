@@ -1,0 +1,167 @@
+direction: right
+
+title: {
+  label: Toon Squad Architecture
+  near: top-center
+  shape: text
+  style.font-size: 24
+  style.bold: true
+}
+
+user: {
+  label: User's Browser
+  shape: rectangle
+  style.fill: "#1a1a2e"
+  style.stroke: "#e94560"
+  style.font-color: "#eee"
+
+  extension: {
+    label: Chrome Extension (MV3)
+    style.fill: "#16213e"
+    style.stroke: "#0f3460"
+    style.font-color: "#eee"
+
+    sw: {
+      label: Service Worker
+      shape: hexagon
+      style.fill: "#0f3460"
+      style.font-color: "#eee"
+    }
+    offscreen: {
+      label: Offscreen Document
+      shape: hexagon
+      style.fill: "#0f3460"
+      style.font-color: "#eee"
+    }
+
+    offscreen -> sw: chrome.runtime\n.sendMessage {
+      style.stroke: "#e94560"
+      style.font-color: "#aaa"
+    }
+  }
+
+  tabs: {
+    label: Web Pages\n(logged-in sessions)
+    shape: page
+    style.fill: "#16213e"
+    style.stroke: "#0f3460"
+    style.font-color: "#eee"
+  }
+
+  extension.sw -> tabs: chrome.scripting\nchrome.tabs {
+    style.stroke: "#e94560"
+    style.font-color: "#aaa"
+  }
+}
+
+bridge: {
+  label: Bridge Server\n(Fly.io)
+  shape: rectangle
+  style.fill: "#1a1a2e"
+  style.stroke: "#533483"
+  style.font-color: "#eee"
+  style.3d: true
+
+  ws: {
+    label: WebSocket Relay
+    shape: queue
+    style.fill: "#2b2d42"
+    style.font-color: "#eee"
+  }
+  http: {
+    label: HTTP /execute
+    shape: rectangle
+    style.fill: "#2b2d42"
+    style.font-color: "#eee"
+  }
+}
+
+web: {
+  label: Web App\n(Vercel)
+  shape: rectangle
+  style.fill: "#1a1a2e"
+  style.stroke: "#2196f3"
+  style.font-color: "#eee"
+  style.3d: true
+
+  ui: {
+    label: Chat UI\n(AI Elements + shadcn)
+    shape: rectangle
+    style.fill: "#0d47a1"
+    style.font-color: "#eee"
+  }
+  api: {
+    label: API Route\n(/api/chat)
+    shape: rectangle
+    style.fill: "#1565c0"
+    style.font-color: "#eee"
+  }
+  ui -> api: useChat {
+    style.stroke: "#64b5f6"
+    style.font-color: "#aaa"
+  }
+}
+
+anthropic: {
+  label: Anthropic API\n(Claude Sonnet 4.6)
+  shape: cloud
+  style.fill: "#1a1a2e"
+  style.stroke: "#d4a574"
+  style.font-color: "#eee"
+}
+
+# Connections
+user.extension.offscreen -> bridge.ws: "wss:// + HMAC token" {
+  style.stroke: "#e94560"
+  style.stroke-width: 3
+  style.font-color: "#aaa"
+  style.animated: true
+}
+
+web.api -> bridge.http: "POST /execute\nBearer BRIDGE_SECRET" {
+  style.stroke: "#2196f3"
+  style.stroke-width: 2
+  style.font-color: "#aaa"
+}
+
+web.api -> anthropic: streamText() {
+  style.stroke: "#d4a574"
+  style.stroke-width: 3
+  style.font-color: "#aaa"
+  style.animated: true
+}
+
+# Auth flow — extension fetches signed token from web app
+web: {
+  session: {
+    label: /api/auth/session-info\n(HMAC token signer)
+    shape: rectangle
+    style.fill: "#1b5e20"
+    style.font-color: "#eee"
+  }
+}
+
+user.extension.sw -> web.session: "GET /api/auth/session-info\n(userId cookie)" {
+  style.stroke: "#4caf50"
+  style.stroke-width: 2
+  style.font-color: "#aaa"
+  style.stroke-dash: 3
+}
+
+# Flow labels
+flow: {
+  label: |md
+    **Data Flow**
+    1. User sends message in chat UI
+    2. API route streams response from Claude
+    3. Claude calls browser tools as needed
+    4. Tools execute via bridge -> extension -> Chrome
+    5. Results flow back through the chain
+
+    **Auth: cookie userId -> signed HMAC token -> bridge verification**
+  |
+  near: bottom-center
+  shape: text
+  style.font-size: 13
+  style.font-color: "#888"
+}
